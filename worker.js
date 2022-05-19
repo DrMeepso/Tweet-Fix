@@ -18,8 +18,6 @@ async function handleRequest(request) {
 
   }
 
-  console.log(`User has requested ${request.url.split("/")[5]}`)
-
   const videoresp = await fetch(`https://tweetpik.com/api/tweets/${request.url.split("/")[5]}/video`);
   const videojson = await videoresp.json()
 
