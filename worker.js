@@ -18,12 +18,10 @@ async function handleRequest(request) {
 
   }
 
-  const videoresp = await fetch(`https://tweetpik.com/api/tweets/${request.url.split("/")[5]}/video`);
-  const videojson = await videoresp.json()
-
-  const inforesp = await fetch(`https://tweetpik.com/api/tweets/${request.url.split("/")[5]}`);
-  const infojson = await inforesp.json()
-
+  var APIResaults = await getFromCache(request.url.split("/")[5])
+  const infojson = APIResaults.info
+  const videojson = APIResaults.video
+  
   var resp = new Response(
       	`<html>
 			<head>
@@ -46,4 +44,35 @@ async function handleRequest(request) {
   resp.headers.set('Content-Type', 'text/html');
   return resp
 
+}
+
+const cache = []
+async function getFromCache(ID){
+
+  try {
+    if ( cache.find( e => e.ID == ID ) == undefined ){
+
+      console.log("Fetching API")
+
+      const videoresp = await fetch(`https://tweetpik.com/api/tweets/${ID}/video`);
+      const videojson = await videoresp.json()
+
+      const inforesp = await fetch(`https://tweetpik.com/api/tweets/${ID}`);
+      const infojson = await inforesp.json()
+
+      cache.push( { "ID": ID, video: videojson, info: infojson } )
+      return { "ID": ID, video: videojson, info: infojson }
+
+    } else {
+
+      console.log("Fetched From Cache")
+      var cinfo = cache.find( e => e.ID == ID )
+
+      return cinfo
+
+    }
+  }
+  catch(err){
+    return { "ID": ID, "video": {"variants": [{"url": "https://video.twimg.com/ext_tw_video/1530197358289485825/pu/vid/320x320/sePmqJ9gnYc27GNi.mp4?tag=12"}]}, "info": {"text": "Error Loading Video", "username": "Error Loading Video!"} }
+  }
 }
